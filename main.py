@@ -7,6 +7,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiohttp import web
 
 BOT_TOKEN = "8903608111:AAFP7AIAhNxdUZC64DunwoEirvJXagX5-10"
 CRYPTO_PAY_TOKEN = "590296:AAoW0FE3wdGPIe7VDhjt4FIhbMfZQo1KDU5"
@@ -30,7 +31,7 @@ def get_main_kb():
 @dp.message(Command("start"))
 async def start(message: Message, state: FSMContext):
     await state.clear()
-    text = text = (
+    text = (
     "Привет! 👋 Это VpiskaPL — твой пропуск на самые закрытые тусовки Варшавы!\n\n"
     "Мы организуем Private Party для своих. Никаких случайных людей — только топовая компания и правильная атмосфера.\n\n"
     "Ближайшая вписка состоится в следующую субботу! 📅\n\n"
@@ -125,7 +126,19 @@ async def gallery(message: Message):
 async def support(message: Message):
     await message.answer(f"Пиши сюда: https://t.me/{SUPPORT_USER}")
 
+async def handle(request):
+    return web.Response(text="Bot is running!")
+
+async def start_web_server():
+    app = web.Application()
+    app.router.add_get('/', handle)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, '0.0.0.0', int(os.environ.get("PORT", 8080)))
+    await site.start()
+
 async def main():
+    await start_web_server()
     print("Бот успешно запущен!")
     await dp.start_polling(bot)
 
